@@ -1,8 +1,8 @@
 const form = document.querySelector('.search-form');
+const container = document.querySelector('.container');
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-
   const formData = new FormData(event.target);
 
   const response = await fetch('/.netlify/functions/unsplash-search', {
@@ -14,30 +14,39 @@ form.addEventListener('submit', async (event) => {
     .then((res) => res.json())
     .catch((err) => console.error(err));
 
-  console.log(response);
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
 
-  /*
-  some sample code
-    const dataObj = response.results[0];
-    const postImg = clone.querySelector('.post__img');
-    postImg.src = dataObj.urls.small;
-    postImg.alt = dataObj.alt_description;
-  */
+  try {
+    response.results.forEach((dataObj) => {
+      const cardClone = document.querySelector('#template').content.firstElementChild.cloneNode(true);
+      const postImg = cardClone.querySelector('.post__img');
+      const postUser = cardClone.querySelector('.post__user');
+      const postDescription = cardClone.querySelector('.post__desc');
 
-  /*
-    Loop through the results[] array. For each result, create a clone of the
-    template and append it to the DOM element with the .container class.
-  */
+      if (dataObj.user.first_name || dataObj.user.last_name) {
+        postUser.textContent = `by ${dataObj.user.first_name || ''} ${dataObj.user.last_name || ''}`;
+      }
 
-  /*
-    Add an attribution statement below the image using the
-    postUser element and the photographer's name from dataObj
-   */
+      let shortDescription = dataObj.description;
+      if (shortDescription) {
+        if (typeof shortDescription === 'string' && shortDescription.length > 100) {
+          shortDescription = `${shortDescription.slice(0, 100)}...`;
+        }
+      } else {
+        shortDescription = '';
+      }
 
-  /*
-    Check the description of the post. If it's bot bull and less than 100 characters,
-    add the description from dataObj to the post. If it's more than 100 characters,
-    add the first 100 characters of the description from dataObj to the post followed by
-    an ellipsis (...)
-  */
+      postImg.src = dataObj.urls.small;
+      postImg.alt = dataObj.alt_description;
+
+      postDescription.textContent = `${shortDescription}`;
+
+      container.appendChild(cardClone);
+    });
+    // }
+  } catch (error) {
+    container.textContent = 'An error has occured.';
+  }
 });

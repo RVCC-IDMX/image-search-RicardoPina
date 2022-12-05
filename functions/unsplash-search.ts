@@ -18,7 +18,7 @@ const handler: Handler = async (event, context) => {
     },
   )
     .then((resp) => {
-      // console.log(resp);
+      console.log(resp);
       return resp.json();
     })
     .catch((error) => console.log('error', error));
